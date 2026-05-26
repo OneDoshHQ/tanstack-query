@@ -210,6 +210,28 @@ yarn test       # jest
 
 `yarn build` produces both ESM (`dist/index.mjs`) and per-module CJS (`dist/src/...`) outputs.
 
+## Releasing a new version
+
+Releases are driven by GitHub Releases. The `release.yml` workflow runs on every published release, verifies the tag matches `package.json`, builds, tests, and publishes to npm.
+
+1. **Bump the version** in `package.json`:
+   - patch (`0.1.0` → `0.1.1`) for bug fixes
+   - minor (`0.1.0` → `0.2.0`) for backward-compatible features
+   - major (`0.1.0` → `1.0.0`) for breaking changes
+2. **Commit and push** to `main`:
+   ```bash
+   git commit -am "chore: bump 0.1.1"
+   git push origin main
+   ```
+3. **Create a release** with a tag of the form `vX.Y.Z` (the leading `v` is stripped before the version-match check):
+   - Via the GitHub UI: *Releases → Draft a new release → tag* `v0.1.1` *→ Publish release*
+   - Via CLI:
+     ```bash
+     gh release create v0.1.1 --target main --title v0.1.1 --notes "..."
+     ```
+
+The workflow takes ~30s. If the tag doesn't match `package.json`, the *Verify package.json version matches tag* step fails before any publish runs, so you can fix and retry.
+
 ## License
 
 [MIT](LICENSE).
