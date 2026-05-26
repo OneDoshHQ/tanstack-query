@@ -1,17 +1,15 @@
-# @onedoshhq/tanstack-query
+# @smithkit/tanstack-query
 
-OneDosh's internal wrapper around [`@tanstack/react-query`](https://tanstack.com/query) for typed GET/POST/PATCH/PUT/DELETE requests with global middleware, headers, pagination, and query-key tracking. Works in React and React Native.
-
-This package is **internal to OneDosh** and is published to npm to make installation across our services convenient. There is no support commitment for external consumers — use at your own risk and pin to an exact version if you do.
+Thin wrapper around [`@tanstack/react-query`](https://tanstack.com/query) for typed GET/POST/PATCH/PUT/DELETE requests with global middleware, headers, pagination, and query-key tracking. Works in React and React Native.
 
 ## Install
 
 ```bash
-yarn add @onedoshhq/tanstack-query @tanstack/react-query axios
+yarn add @smithkit/tanstack-query @tanstack/react-query axios
 # or
-npm install @onedoshhq/tanstack-query @tanstack/react-query axios
+npm install @smithkit/tanstack-query @tanstack/react-query axios
 # or
-bun add @onedoshhq/tanstack-query @tanstack/react-query axios
+bun add @smithkit/tanstack-query @tanstack/react-query axios
 ```
 
 Peer deps: `@tanstack/react-query` `^4.26.1`, `axios` `^1.3.4`, `react` `^16.8 || ^17 || ^18`. `react-native` is optional.
@@ -22,7 +20,7 @@ Configure once at app startup, before mounting `<QueryClientProvider>`:
 
 ```ts
 import { QueryClient } from '@tanstack/react-query';
-import { bootstrapQueryRequest } from '@onedoshhq/tanstack-query';
+import { bootstrapQueryRequest } from '@smithkit/tanstack-query';
 
 export const queryClient = new QueryClient();
 
@@ -87,7 +85,7 @@ The hooks treat `status: false` as a rejection so it surfaces via tanstack-query
 Set headers globally from any component (e.g. after login):
 
 ```ts
-import { useQueryHeaders } from '@onedoshhq/tanstack-query';
+import { useQueryHeaders } from '@smithkit/tanstack-query';
 
 const { headers, setQueryHeaders } = useQueryHeaders();
 
@@ -101,7 +99,7 @@ Headers persist across requests until cleared with `setQueryHeaders(undefined)`.
 ### `useGetRequest({ path, load?, queryOptions?, keyTracker?, baseUrl?, headers?, paginationConfig? })`
 
 ```tsx
-import { useGetRequest } from '@onedoshhq/tanstack-query';
+import { useGetRequest } from '@smithkit/tanstack-query';
 
 const { data, isLoading, error, refetch, nextPage, prevPage, gotoPage } = useGetRequest({
   path: '/api/items',
@@ -130,7 +128,7 @@ Infinite-scroll variant. Same shape as `useGetRequest` but adds `fetchNextPage` 
 ### `usePostRequest({ path, isFormData? })`
 
 ```tsx
-import { usePostRequest } from '@onedoshhq/tanstack-query';
+import { usePostRequest } from '@smithkit/tanstack-query';
 
 const { post, isPending, error } = usePostRequest({ path: '/api/items' });
 
@@ -169,10 +167,10 @@ const { queryKey, data, refetchQuery } = useKeyTrackerModel<Item[]>('items');
 
 ## Middleware
 
-Pass an array of middleware functions to `bootstrapQueryRequest` to run logic around every request. Useful for auth, integrity tokens, retry-on-401, telemetry.
+Pass an array of middleware functions to `bootstrapQueryRequest` to run logic around every request. Useful for auth, retry-on-401, telemetry.
 
 ```ts
-import type { MiddlewareFunction } from '@onedoshhq/tanstack-query';
+import type { MiddlewareFunction } from '@smithkit/tanstack-query';
 
 const authMiddleware: MiddlewareFunction = async (context, next) => {
   const token = getAuthToken();
@@ -211,12 +209,6 @@ yarn test       # jest
 ```
 
 `yarn build` produces both ESM (`dist/index.mjs`) and per-module CJS (`dist/src/...`) outputs.
-
-## Releases
-
-- Versions follow semver-ish. Bumps are made by editing `package.json` on `main`, then creating a GitHub release with tag `vX.Y.Z`.
-- The `release.yml` workflow verifies the tag matches `package.json`, builds, tests, and runs `npm publish` against the `NPM_TOKEN` repo secret. Concurrency is capped at one publish at a time.
-- Anything merged to `main` runs `ci.yml` (build + test) on PRs and on push.
 
 ## License
 

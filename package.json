@@ -1,25 +1,12 @@
 {
-  "name": "@onedoshhq/tanstack-query",
-  "version": "0.7.13",
-  "description": "OneDosh's internal wrapper around @tanstack/react-query for typed GET/POST/PATCH/PUT/DELETE requests with global middleware, headers, pagination, and key tracking.",
+  "name": "@smithkit/tanstack-query",
+  "version": "0.1.0",
+  "description": "Thin wrapper around @tanstack/react-query for typed GET/POST/PATCH/PUT/DELETE requests with global middleware, headers, pagination, and key tracking. Works in React and React Native.",
   "license": "MIT",
   "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "OneDosh",
-    "email": "engineering@onedosh.com",
-    "url": "https://onedosh.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/OneDoshHQ/tanstack-query.git"
-  },
-  "bugs": {
-    "url": "https://github.com/OneDoshHQ/tanstack-query/issues"
-  },
-  "homepage": "https://github.com/OneDoshHQ/tanstack-query#readme",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin rollup-plugin-typescript2",
