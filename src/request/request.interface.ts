@@ -29,6 +29,7 @@ export interface IRequestError {
   timeStamp: Date;
   status: boolean;
   data?: any;
+  headers?: Record<string, any>;
 }
 
 export interface IRequestSuccess<T> {
@@ -52,4 +53,5 @@ export interface IServerRequestError {
   message: string;
   error?: Record<string, any>;
   data?: Record<string, any>;
+  headers?: Record<string, any>;
 }

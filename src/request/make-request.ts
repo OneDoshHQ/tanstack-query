@@ -149,7 +149,11 @@ async function performRequest<TResponse>({
 
     if (responseCode > 299) {
       // server returned an error
-      return errorTransformer({ ...jsonResp, statusCode: responseCode });
+      return errorTransformer({
+        ...jsonResp,
+        statusCode: responseCode,
+        headers: { ...resp.headers },
+      });
     }
 
     return successTransformer<TResponse>({
@@ -159,11 +163,16 @@ async function performRequest<TResponse>({
     });
   } catch (error: any) {
     const errorData = error?.response?.data;
+    const responseHeaders = error?.response?.headers;
     return errorTransformer({
-      statusCode: error.status,
+      statusCode: error?.response?.status ?? error.status,
       message: error.message,
-      code: error.status || error.statusCode,
+      code: error?.response?.status ?? error.status ?? error.statusCode,
       ...errorData,
+      // Placed after ...errorData so an HTML/string body (which spreads into
+      // char-indexed keys) can never clobber the forwarded headers. Normalised
+      // to a plain object so consumers get lowercase keys (e.g. `server`).
+      headers: responseHeaders ? { ...responseHeaders } : undefined,
     });
   }
 }

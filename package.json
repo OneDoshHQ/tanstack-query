@@ -1,6 +1,6 @@
 {
   "name": "@smithkit/tanstack-query",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Thin wrapper around @tanstack/react-query for typed GET/POST/PATCH/PUT/DELETE requests with global middleware, headers, pagination, and key tracking. Works in React and React Native.",
   "license": "MIT",
   "main": "dist/index.js",
