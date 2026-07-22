@@ -4,7 +4,7 @@ import { useStore } from '@tanstack/react-store';
 import { useEffect, useMemo, useState } from 'react';
 import { useEnvironmentVariables } from '../config';
 import { bootStore } from '../config/bootStore';
-import type { IRequestError, IRequestSuccess } from '../request';
+import type { IMakeRequest, IRequestError, IRequestSuccess } from '../request';
 import { HttpMethod, makeRequest } from '../request';
 import { executeMiddlewareChain } from '../request/make-request';
 import { useHeaderStore, usePauseFutureRequests } from '../stores';
@@ -28,13 +28,19 @@ export const useDeleteRequest = <TResponse>(deleteOptions?: DefaultRequestOption
     return { ...providerHeaders, ...storeHeaders };
   }, [storeHeaders, headerProvider]);
 
-  const sendRequest = async (path: string): Promise<IRequestSuccess<TResponse>> => {
+  const sendRequest = async (
+    path: string,
+    requestConfig?: Partial<IMakeRequest>
+  ): Promise<IRequestSuccess<TResponse>> => {
+    delete requestConfig?.body;
+
     const requestOptions = {
       path,
       headers: { ...globalHeaders, ...headers },
       baseURL: baseUrl ?? API_URL,
       method: HttpMethod.DELETE,
       timeout: TIMEOUT,
+      ...requestConfig,
     };
 
     const finalHandler: MiddlewareNext<TResponse> = async (options) => {
@@ -64,16 +70,30 @@ export const useDeleteRequest = <TResponse>(deleteOptions?: DefaultRequestOption
     }
   };
 
-  const mutation = useMutation<IRequestSuccess<TResponse>, IRequestError, { path: string }>({
-    mutationFn: async ({ path }) => sendRequest(path),
+  const mutation = useMutation<
+    IRequestSuccess<TResponse>,
+    IRequestError,
+    { path: string; requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
+  >({
+    mutationFn: async ({ path, requestConfig }) => sendRequest(path, requestConfig),
   });
 
   const destroy = async (
     path: string,
-    options?: MutateOptions<IRequestSuccess<TResponse>, IRequestError, { path: string }, unknown>
+    options?: (
+      | MutateOptions<
+          IRequestSuccess<TResponse>,
+          IRequestError,
+          { path: string; requestConfig?: Partial<Omit<IMakeRequest, 'body'>> },
+          unknown
+        >
+      | { requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
+      | undefined
+    ) & { requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
   ): Promise<IRequestSuccess<TResponse> | undefined> => {
     if (!isFutureMutationsPaused) {
-      return mutation.mutateAsync({ path }, options);
+      const { requestConfig, ...otherOptions } = options ?? {};
+      return mutation.mutateAsync({ path, requestConfig }, otherOptions);
     } else {
       setRequestPayload({ path, options });
       return undefined;

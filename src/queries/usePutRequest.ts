@@ -7,7 +7,7 @@ import { bootStore } from '../config/bootStore';
 import { useUploadProgress } from '../hooks';
 import { HttpMethod, makeRequest } from '../request';
 import { executeMiddlewareChain } from '../request/make-request';
-import type { IRequestError, IRequestSuccess } from '../request/request.interface';
+import type { IMakeRequest, IRequestError, IRequestSuccess } from '../request/request.interface';
 import { useHeaderStore, usePauseFutureRequests } from '../stores';
 import type { MiddlewareContext, MiddlewareNext } from '../types';
 import type { DefaultRequestOptions } from './queries.interface';
@@ -28,7 +28,15 @@ export const usePutRequest = <TResponse>({ path, baseUrl, headers }: { path: str
 
   const isFutureMutationsPaused = usePauseFutureRequests((state) => state.isFutureMutationsPaused);
 
-  const sendRequest = async (res: (value: any) => void, rej: (reason?: any) => void, data: any) => {
+  const sendRequest = async (
+    res: (value: any) => void,
+    rej: (reason?: any) => void,
+    putData: { data: any; requestConfig?: Partial<IMakeRequest> }
+  ) => {
+    const { data, requestConfig } = putData;
+
+    delete requestConfig?.body;
+
     const requestOptions = {
       path: path,
       body: data,
@@ -37,6 +45,7 @@ export const usePutRequest = <TResponse>({ path, baseUrl, headers }: { path: str
       baseURL: baseUrl ?? API_URL,
       timeout: TIMEOUT,
       onUploadProgress,
+      ...requestConfig,
     };
 
     const finalHandler: MiddlewareNext<TResponse> = async (options) => {
@@ -67,20 +76,34 @@ export const usePutRequest = <TResponse>({ path, baseUrl, headers }: { path: str
     }
   };
 
-  const mutation = useMutation<IRequestSuccess<TResponse>, IRequestError>({
+  const mutation = useMutation<
+    IRequestSuccess<TResponse>,
+    IRequestError,
+    { data: any; requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
+  >({
     mutationKey: [path, { type: 'mutation' }],
-    mutationFn: (dataData: any) =>
+    mutationFn: (putData) =>
       new Promise<IRequestSuccess<TResponse>>((res, rej) => {
-        return sendRequest(res, rej, dataData);
+        return sendRequest(res, rej, putData);
       }),
   });
 
-  const put = async (
-    data: any,
-    options?: MutateOptions<IRequestSuccess<TResponse>, IRequestError, void, unknown> | undefined
+  const put = async <T>(
+    data: T,
+    options?: (
+      | MutateOptions<
+          IRequestSuccess<TResponse>,
+          IRequestError,
+          { data: T; requestConfig?: Partial<Omit<IMakeRequest, 'body'>> },
+          unknown
+        >
+      | { requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
+      | undefined
+    ) & { requestConfig?: Partial<Omit<IMakeRequest, 'body'>> }
   ): Promise<IRequestSuccess<TResponse> | undefined> => {
     if (!isFutureMutationsPaused) {
-      return mutation.mutateAsync(data, options);
+      const { requestConfig, ...otherOptions } = options ?? {};
+      return mutation.mutateAsync({ data, requestConfig }, otherOptions);
     } else {
       setRequestPayload({ data, options });
       return undefined;
