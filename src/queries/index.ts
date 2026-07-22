@@ -4,3 +4,4 @@ export * from './useGetInfiniteRequest';
 export * from './useGetRequest';
 export * from './usePatchRequest';
 export * from './usePostRequest';
+export * from './usePutRequest';
